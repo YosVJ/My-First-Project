@@ -1,27 +1,29 @@
 const express = require("express");
-const sqlite3 = require("sqlite3").verbose();
+const { Pool } = require("pg");
 
 const app = express();
 app.use(express.json());
 
-// Open or create the database file
-const db = new sqlite3.Database("database.db");
-
-// Create a table if it does not exist
-db.serialize(() => {
-  db.run(`
-    CREATE TABLE IF NOT EXISTS messages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      text TEXT NOT NULL
-    )
-  `);
+// Supabase / Postgres connection (Render will provide DATABASE_URL)
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
 });
 
-// Home route
+// Create table if it doesn't exist
+async function init() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS messages (
+      id SERIAL PRIMARY KEY,
+      text TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `);
+}
+
 app.get("/", (req, res) => {
   res.send(`
-    <h1>Hello 👋</h1>
-    <p>This is your first web database.</p>
+    <h1>My Online Web Database</h1>
 
     <input id="msg" placeholder="Type a message" />
     <button onclick="send()">Save</button>
@@ -52,25 +54,36 @@ app.get("/", (req, res) => {
   `);
 });
 
-// Get all messages
-app.get("/messages", (req, res) => {
-  db.all("SELECT * FROM messages", (err, rows) => {
-    if (err) return res.status(500).json(err);
-    res.json(rows);
-  });
+app.get("/messages", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT id, text, created_at FROM messages ORDER BY id DESC"
+    );
+    res.json(result.rows);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-// Save a message
-app.post("/messages", (req, res) => {
-  const text = req.body.text;
+app.post("/messages", async (req, res) => {
+  const text = (req.body?.text || "").trim();
   if (!text) return res.status(400).json({ error: "No text" });
 
-  db.run("INSERT INTO messages (text) VALUES (?)", [text], () => {
+  try {
+    await pool.query("INSERT INTO messages (text) VALUES ($1)", [text]);
     res.json({ success: true });
-  });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-// Start the server
-app.listen(3000, () => {
-  console.log("Server running at http://localhost:3000");
-});
+const PORT = process.env.PORT || 3000;
+
+init()
+  .then(() => {
+    app.listen(PORT, () => console.log("Server running on port", PORT));
+  })
+  .catch((e) => {
+    console.error("DB init failed:", e.message);
+    process.exit(1);
+  });
