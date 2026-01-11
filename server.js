@@ -4,6 +4,16 @@ const { Pool } = require("pg");
 const app = express();
 app.use(express.json());
 
+// 🔍 DEBUG: check if Render received DATABASE_URL
+console.log("DATABASE_URL exists?", !!process.env.DATABASE_URL);
+
+if (!process.env.DATABASE_URL) {
+  console.error(
+    "DATABASE_URL is missing. Add it in Render → Service → Settings → Environment Variables."
+  );
+  process.exit(1);
+}
+
 // Supabase / Postgres connection (Render will provide DATABASE_URL)
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
