@@ -84,6 +84,7 @@ init()
     app.listen(PORT, () => console.log("Server running on port", PORT));
   })
   .catch((e) => {
-    console.error("DB init failed:", e.message);
+    console.error("DB init failed:", e);   // prints full error
     process.exit(1);
   });
+  
