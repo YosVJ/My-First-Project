@@ -14,6 +14,16 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
+try {
+  const u = new URL(process.env.DATABASE_URL);
+  console.log("DB host:", u.hostname);
+  console.log("DB port:", u.port);
+  console.log("DB protocol:", u.protocol);
+} catch (e) {
+  console.log("DATABASE_URL parse error:", e.message);
+}
+
+
 // Supabase / Postgres connection (Render will provide DATABASE_URL)
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
