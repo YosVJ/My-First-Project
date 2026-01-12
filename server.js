@@ -1,7 +1,9 @@
 const express = require("express");
 const { Pool } = require("pg");
+const cors = require("cors");
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 // 🔍 DEBUG: check if Render received DATABASE_URL
@@ -92,6 +94,52 @@ app.post("/messages", async (req, res) => {
   try {
     await pool.query("INSERT INTO messages (text) VALUES ($1)", [text]);
     res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.put("/messages/:id", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const text = (req.body?.text || "").trim();
+
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: "Invalid id" });
+  }
+  if (!text) {
+    return res.status(400).json({ error: "No text" });
+  }
+
+  try {
+    const result = await pool.query(
+      "UPDATE messages SET text = $1 WHERE id = $2 RETURNING id, text, created_at",
+      [text, id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+    res.json(result.rows[0]);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete("/messages/:id", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ error: "Invalid id" });
+  }
+
+  try {
+    const result = await pool.query(
+      "DELETE FROM messages WHERE id = $1 RETURNING id",
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+    res.json({ success: true, id: result.rows[0].id });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
