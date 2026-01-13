@@ -45,17 +45,20 @@
 
 ---
 
-## Approval Matrix (Fill-in)
-Use your company’s authority matrix per Entity.
+## Approval Matrix (Option 1)
 
-| Entity | Amount Range | Required Approvers |
+| Entity | Amount Range (PHP) | Required Approvers |
 |---|---:|---|
-| SHIC | 0 - ____ | Dept Approver |
-| SHIC | ____ - ____ | Dept + SCM |
-| SHIC | ____+ | Dept + SCM + Finance |
-| SY3 | 0 - ____ | Dept Approver |
-| SY3 | ____ - ____ | Dept + SCM |
-| SY3 | ____+ | Dept + SCM + Finance |
+| SHIC | 0 – 10,000 | Dept Approver |
+| SHIC | 10,001 – 50,000 | Dept Approver + SCM |
+| SHIC | 50,001+ | Dept Approver + SCM + Finance |
+| SY3 | 0 – 10,000 | Dept Approver |
+| SY3 | 10,001 – 50,000 | Dept Approver + SCM |
+| SY3 | 50,001+ | Dept Approver + SCM + Finance |
+| SGH | 0 – 10,000 | Dept Approver |
+| SGH | 10,001 – 50,000 | Dept Approver + SCM |
+| SGH | 50,001+ | Dept Approver + SCM + Finance |
+
 
 ---
 
