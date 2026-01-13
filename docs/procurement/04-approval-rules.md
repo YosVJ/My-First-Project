@@ -1,59 +1,64 @@
-# Approval Rules (v1)
-
-## Scope
-This defines who approves what, per company entity and amount, and how the PR moves between statuses.
-
----
-
-## Company Entities
-- Synercore Global Holdings (SGH)
-- Synercore Heavy Industries Corp (SHIC)
-- SY3 Energy Maintenance Services Corp (SY3)
-
----
+# Approval Rules and Workflow (v1)
 
 ## Roles
 - Requestor
 - Department Approver
-- Procurement Reviewer
-- SCM Head
-- Finance Approver
-- President/Top Approver (if needed)
-- Warehouse Receiver (for receiving step)
+- Procurement
+- SCM Head (optional)
+- Finance (optional)
+- Warehouse/Receiving
 
----
-
-## PR Statuses
+## Core PR Statuses
 - DRAFT
 - SUBMITTED
 - RETURNED_FOR_INFO
-- REJECTED_BY_DEPT
+- REJECTED
 - APPROVED_BY_DEPT
-- UNDER_PROCUREMENT_REVIEW
+- UNDER_PROCUREMENT
 - RFQ_SENT
 - QUOTATIONS_RECEIVED
-- FOR_AWARD_DECISION
-- PO_DRAFTED
-- PO_APPROVED
+- FOR_AWARD
+- PO_CREATED
 - FOR_DELIVERY
-- DELIVERED
 - RECEIVED
 - CLOSED
 
 ---
 
-## Approval Matrix (Fill-in)
-| Entity | Amount Range | Required Approvers |
-|-------|--------------|-------------------|
-| SHIC  | 0 - ____     | Dept Head |
-| SHIC  | ____ - ____  | Dept Head + SCM Head |
-| SHIC  | ____+        | Dept Head + SCM Head + Finance + President |
-| SY3   | 0 - ____     | Dept Head |
-| ...   | ...          | ... |
+## Status Transition Table (System Rules)
+
+| Current Status | Who Can Act | Action | Next Status | Notes |
+|---|---|---|---|---|
+| DRAFT | Requestor | Submit PR | SUBMITTED | Must select Entity + Department + Items |
+| SUBMITTED | Dept Approver | Approve | APPROVED_BY_DEPT | Adds remarks optional |
+| SUBMITTED | Dept Approver | Return for info | RETURNED_FOR_INFO | Requires remarks |
+| SUBMITTED | Dept Approver | Reject | REJECTED | Requires remarks |
+| RETURNED_FOR_INFO | Requestor | Resubmit | SUBMITTED | After edits |
+| APPROVED_BY_DEPT | System | Route to Procurement | UNDER_PROCUREMENT | Auto transition |
+| UNDER_PROCUREMENT | Procurement | Validate + Start RFQ | RFQ_SENT | Attach RFQ reference |
+| RFQ_SENT | Procurement | Record quotations | QUOTATIONS_RECEIVED | Upload quotations |
+| QUOTATIONS_RECEIVED | Procurement | Prepare award packet | FOR_AWARD | TE/TOB attached if needed |
+| FOR_AWARD | Procurement/SCM | Approve award | PO_CREATED | May require SCM/Finance based on matrix |
+| PO_CREATED | Procurement | Confirm delivery schedule | FOR_DELIVERY | PO sent to supplier |
+| FOR_DELIVERY | Warehouse | Receive goods | RECEIVED | With receiving report |
+| RECEIVED | Accounting/Procurement | Close request | CLOSED | After docs complete |
 
 ---
 
-## Exceptions
-- If supplier is not lowest price → require justification + SCM Head approval
-- If urgent request → tag URGENT, still requires same approvals
-- If technical item → requires Technical Evaluation (TE) attachment
+## Approval Matrix (Fill-in)
+Use your company’s authority matrix per Entity.
+
+| Entity | Amount Range | Required Approvers |
+|---|---:|---|
+| SHIC | 0 - ____ | Dept Approver |
+| SHIC | ____ - ____ | Dept + SCM |
+| SHIC | ____+ | Dept + SCM + Finance |
+| SY3 | 0 - ____ | Dept Approver |
+| SY3 | ____ - ____ | Dept + SCM |
+| SY3 | ____+ | Dept + SCM + Finance |
+
+---
+
+## Notes
+- If supplier is not lowest price, system requires justification + SCM approval.
+- Technical items require TE attachment before moving to FOR_AWARD.
